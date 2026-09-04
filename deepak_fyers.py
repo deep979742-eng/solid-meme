@@ -77,16 +77,16 @@ def fetch_chart_history():
 
 st.session_state.chart_df = pd.DataFrame(fetch_chart_history())
 
-# 🚀 100% DYNAMIC STOCK LIST LOGIC (No Hardcoding) 
+# 🚀 FIX APPLIED HERE ('SYMS' instead of 'SYMBOL')
 dynamic_symbols = ["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"]
 if 'cached_data' in st.session_state and st.session_state.cached_data:
-    fetched_syms = sorted(list(set([item['SYMBOL'] for item in st.session_state.cached_data])))
+    fetched_syms = sorted(list(set([item.get('SYMS', item.get('SYMBOL', '')) for item in st.session_state.cached_data if item.get('SYMS') or item.get('SYMBOL')])))
     if fetched_syms: dynamic_symbols = fetched_syms
 
 def find_divergence_stocks(chart_df, latest_data_list):
     bullish_list, bearish_list = [], []
     if chart_df.empty or not latest_data_list: return pd.DataFrame(bullish_list), pd.DataFrame(bearish_list)
-    latest_lookup = {item['SYMS']: item for item in latest_data_list}
+    latest_lookup = {item.get('SYMS', item.get('SYMBOL', '')): item for item in latest_data_list}
     day_df = chart_df[chart_df['Date'].astype(str).str.strip() == today_str]
 
     for sym in day_df['Symbol'].unique():
@@ -121,7 +121,6 @@ if 'cached_data' in st.session_state and len(st.session_state.cached_data) > 0:
         if selected_tab == "📊 Dash": show_pct = st.toggle("SHOW %", value=True)
 
     if selected_tab == "📊 Dash":
-        # Hata diya Warning box!
         def color_num(val, is_pct=False):
             try: return f"<span style='color: {'#00AA00' if float(val)>0 else '#FF0000' if float(val)<0 else '#888'};'>{float(val):+.2f}{'%' if is_pct else ''}</span>"
             except: return str(val)
